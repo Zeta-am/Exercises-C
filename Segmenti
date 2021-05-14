@@ -1,0 +1,160 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+//DEFINIZIONE STRUTTURE
+typedef struct {
+	float x;
+	float y;
+}Point;
+
+typedef struct {
+	Point es;
+	Point ed;
+}Segment;
+
+typedef struct nodo {
+	Segment s;
+	struct nodo *next;
+}Nodo;
+
+//PROTOTIPI DI FUNZIONE
+void istruzioni();
+void visualizza(Nodo *);
+void visualizzaSeg(Segment *);
+float lungh(Point *, Point *);
+void inserisciTesta(Nodo **);
+void leggiSeg(Segment *);
+void cancellaTesta(Nodo **);
+int verificaPerpend(Nodo *);
+
+int main() {
+	Nodo *head = NULL;
+	int scelta = -1;
+	while(scelta != 0) {
+		istruzioni();
+		scanf("%d" , &scelta);
+		switch(scelta) {
+			case 1:	//inserimento
+			inserisciTesta(&head);
+			puts("Inserimento effettuato!\n");
+			break;
+			
+			case 2:	//visualizza
+			visualizza(head);
+			break;
+			
+			case 3:	//cancella
+			cancellaTesta(&head);
+			break;
+			
+			case 4:
+			int ris = verificaPerpend(head);
+			if(ris)
+				puts("I primi due segmenti sono perpendicolari\n");
+			else
+				puts("I primi due segmenti non sono perpendicolari!\n");
+			break;
+			
+			case 0:
+			break;
+			
+			default:
+			puts("Opzione non presente!\n");
+		}
+	}
+	puts("Alla prossima!");
+}
+
+void istruzioni(){
+	puts("Scegli un opzione:\n"
+	     "  [1]-Inserimento in testa\n"
+	     "  [2]-Visualizzazione\n"
+	     "  [3]-Cancellazione in testa\n"
+	     "  [4]-Verifica se i primi due segmenti sono perpendicolari\n"
+	     "  [0]-Esci");
+	printf("-->");
+}
+
+void visualizza(Nodo *head) {
+	if(head == NULL)
+		puts("Non ci sono elementi nella lista!\n");
+	else {
+		puts("Ecco i segmenti nella lista: ");
+		puts("*************************");
+		int i = 1;
+		while(head != NULL) {
+			printf("Segmento %d:\n", i);
+			visualizzaSeg(&head->s);
+			puts("");
+			head = head->next;
+			++i;
+		}
+		puts("*************************");
+		puts("Fine della lista!\n");
+	}
+}
+
+void visualizzaSeg(Segment *s) {
+	printf("Estremo destro: (%.2f, %.2f)\n", s->ed.x, s->ed.y);
+	printf("Estremo sinistro: (%.2f, %.2f)\n", s->es.x, s->es.y);
+	
+	//segmento parallelo all'asse x
+	if(s->es.y == s->ed.y) {
+		printf("Lunghezza: %.2f\n", fabs(s->ed.x - s->es.x));		//fabs sarebbe il valore assoluto
+		puts("Il segmento è parallelo all'asse delle x");
+	}
+		
+	//segmento parallelo all'assse y
+	else if(s->es.x == s->ed.x) {
+		printf("Lunghezza: %.2f\n", fabs(s->ed.y - s->es.y));
+		puts("Il segmento è parallelo all'asse delle y");
+	}
+	
+	//segmento non parallelo agli assi
+	else {
+		printf("Lunghezza: %.2f\n", lungh(&s->es, &s->ed));
+		puts("Il segmento non è parallelo agli assi");
+	}
+}
+
+float lungh(Point *es, Point *ed) {
+	return sqrt(pow((ed->x - es->x), 2) + pow((ed->y - es->y), 2));
+}
+
+void inserisciTesta(Nodo **ptrHead) {
+	Nodo *nuovo = malloc(sizeof(Nodo));
+	leggiSeg(&nuovo->s);
+	nuovo->next = *ptrHead;
+	*ptrHead = nuovo;
+}
+
+void leggiSeg(Segment *s) {
+	printf("Inserisci la coordinata x dell'estremo sx: ");
+	scanf("%f", &s->es.x);
+	printf("Inserisci la coordinata y dell'estremo sx: ");
+	scanf("%f", &s->es.y);
+	printf("Inserisci la coordinata x dell'estremo dx: ");
+	scanf("%f", &s->ed.x);
+	printf("Inserisci la coordinata y dell'estremo dx: ");
+	scanf("%f", &s->ed.y);
+}
+
+void cancellaTesta(Nodo **ptrHead) {
+	if(*ptrHead == NULL)
+		puts("Non ci sono elementi da cancellare!\n");
+	else {
+		Nodo *node = *ptrHead;
+		*ptrHead = (*ptrHead)->next;
+		free(node);
+		puts("Cancellazione effettuata!\n");
+	}
+}
+
+int verificaPerpend(Nodo *head) {
+	int ris = 0;
+	
+	if(head->s.es.x == head->next->s.es.x)
+		ris = 1;
+	else if
+}
