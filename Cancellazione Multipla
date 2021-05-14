@@ -1,0 +1,38 @@
+void cancellazione(Nodo **ptrHead) {
+	Nodo *node = NULL;		//appoggio per la cancellazione
+	int ris = 0;			//per controllare se sono stati eliminati nodi
+	int count = 0;		//per contare quanti nodi sono stati eliminati
+	
+	if(*ptrHead == NULL)
+		puts("Non ci sono elementi da cancellare!\n");
+	else {
+		//il primo nodo è da cancellare ripetutamente
+		while(*ptrHead != NULL && (*ptrHead)->p.y == 0) {
+			ris = 1;
+			++count;
+			node = *ptrHead;
+			*ptrHead = (*ptrHead)->next;
+			free(node);
+		}
+		//se esci dal while con la seconda condizione falsa...
+		if(*ptrHead != NULL) {
+			node = *ptrHead;
+			while(node->next != NULL) {
+				if(node->next->p.y == 0) {
+					ris = 1;
+					++count;
+					node->next = node->next->next;
+					free(node->next);
+				}
+				else
+					node = node->next;
+			}
+		}
+		
+	}
+	if(ris)
+		printf("Sono stati eliminati: %d punti!\n\n", count);
+	else
+		puts("Non esiste un punto con coordinata y pari a 0\n");
+			
+}
