@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+
+//PROTOTIPI DI FUNZIONE
+int tuttiAlternati(int *, int);
+void scriviNumeri(int *, int);
+int quantiNumeri();
+void leggiNumeri(int *, int);
+
+int main() {
+	int l;
+	int scelta;
+	
+	puts("[1]-Introduci un array\n"
+	     "[2]-Recupera un array da file");
+	printf("-->");
+	scanf("%d", &scelta);
+	//INTRODUZIONE ARRAY
+	if(scelta == 1) {
+		printf("Lunghezza della sequenza: ");
+		scanf("%d", &l);
+		int sequenza[l];
+		for(int i = 0; i < l; ++i) {
+			printf("Introduci un intero: ");
+			scanf("%d", &sequenza[i]);
+		}
+		if(tuttiAlternati(sequenza, l))
+			puts("Ogni elemento della sequenza si alterna di segno con il successivo!");
+		else
+			puts("Esiste un elemento della sequenza che non si alterna di segno con il successivo");
+			
+		scriviNumeri(sequenza, l);
+	}
+	//RECUPERO ARRAY DA FILE
+	else {
+		l = quantiNumeri();
+		
+		int array[l];
+		leggiNumeri(array, l);
+		printf("Ecco la sequenza recuperata: [");
+		for(int i = 0; i < l; ++i)
+			printf("%d ", array[i]);
+		puts(" ]");
+		
+		if(tuttiAlternati(array, l))
+			puts("Ogni elemento della sequenza si alterna di segno con il successivo!");
+		else
+			puts("Esiste un elemento della sequenza che non si alterna di segno con il successivo");
+			
+		scriviNumeri(array, l);
+	}
+}
+
+int tuttiAlternati(int *seq, int dim) {
+	int ris = 1;
+	
+	//CASO BASE IMPLICITO: dim <= 1
+	//PASSO RICORSIVO
+	if(dim > 1)
+		ris = ((seq[0] > 0 && seq[1] < 0) || (seq[0] < 0 && seq[1] > 0)) && tuttiAlternati(seq+1, dim-1);
+	
+	return ris;
+}
+
+
+void scriviNumeri(int *seq, int dim) {
+	FILE *fp = fopen("interi.dat", "wb");
+	if(fp == NULL)
+		puts("Salvataggio non riuscito!");
+	else {
+		fwrite(seq, sizeof(int), dim, fp);
+		fclose(fp);
+		puts("Salvataggio riuscito!");
+	}
+}
+
+int quantiNumeri() {
+	int how = 0;
+	FILE *fp = fopen("interi.dat", "rb");
+	if(fp == NULL)
+		puts("Lettura non riuscita!");
+	else {
+		int numero;
+		while(fread(&numero, sizeof(int), 1, fp))
+			++how;
+		fclose(fp);
+	}
+	return how;
+}
+
+void leggiNumeri(int *seq, int dim) {
+	FILE *fp = fopen("interi.dat", "rb");
+	if(fp == NULL)
+		puts("Lettura non riuscita");
+	else {
+		fread(seq, sizeof(int), dim, fp);
+		fclose(fp);
+	}
+}
