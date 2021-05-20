@@ -1,0 +1,216 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+//DEFINIZIONE STRUTTURE
+typedef struct {
+	char colore[20];
+	float x;
+	float y;
+}Punto;
+
+typedef struct nodo {
+	Punto p;
+	struct nodo *next;
+}Nodo;
+
+//PROTOTIPI DI FUNZIONE
+void istruzioni();
+void visualizzaLista(Nodo *);
+void visualizzaPunto(Punto *);
+void inserimentoTesta(Nodo **);
+void leggiPunto(Punto *);
+void cancellazione(Nodo **);
+void distMin(Nodo *);
+float distanza(Punto *, Punto *);
+void listaColore(Nodo *);
+
+
+int main() {
+	Nodo *head = NULL;
+	
+	int scelta = -1;
+	
+	while(scelta != 0) {
+		istruzioni();
+		scanf("%d%*c", &scelta);
+		switch(scelta) {
+			
+			case 1:
+			visualizzaLista(head);
+			break;
+			
+			case 2:
+			inserimentoTesta(&head);
+			puts("Inserimento effettuato!\n");
+			break;
+			
+			case 3:
+			cancellazione(&head);
+			break;
+			
+			case 4:
+			distMin(head);
+			break;
+			
+			case 5:
+			listaColore(head);
+			break;
+			
+			case 0:
+			break;
+			
+			default:
+			puts("Opzione non presente!");
+		}
+	}
+	puts("Alla prossima!");
+}
+
+void istruzioni() {
+	puts("Inserisci l'operazione da svolgere:\n"
+	     "  [1]-Visualizzazione\n"
+	     "  [2]-Inserimento in testa\n"
+	     "  [3]-Cancellazione coordinate y=0\n"
+	     "  [4]-Calcolo e stampa punti nella lista la cui distanza Euclidea è minima\n"
+	     "  [5]-Visualizza lista per colore\n"
+	     "  [0]-Esci");
+	printf("--> ");
+}
+
+void visualizzaLista(Nodo *head) {
+	if(head == NULL)
+		puts("Non ci sono elementi nella lista.\n");
+	else {
+		puts("Ecco la lista di punti:");
+		int i = 1;
+		while(head != NULL) {
+			printf("Punto %d:\n", i);
+			visualizzaPunto(&head->p);
+			head = head->next;
+			i++;
+		}
+	}
+}
+
+void visualizzaPunto(Punto *p) {
+	printf("Coordinate:(%.2f , %.2f) di colore %s\n", p->x, p->y, p->colore);
+	puts("");
+}
+
+void inserimentoTesta(Nodo **puntaHead) {
+	Nodo *nuovo = malloc(sizeof(Nodo));
+	leggiPunto(&nuovo->p);
+	nuovo->next = *puntaHead;
+	*puntaHead = nuovo;
+}
+
+void leggiPunto(Punto *p) {
+	printf("Inserisci la coordinata x: ");
+	scanf("%f", &p->x);
+	printf("Inserisci la coordinata y: ");
+	scanf("%f", &p->y);
+	printf("Inserisci il colore del punto: ");
+	scanf("%s", p->colore);
+}
+
+
+void cancellazione(Nodo **ptrHead) {
+	Nodo *node = NULL;		//appoggio per la cancellazione
+	int ris = 0;			//per controllare se sono stati eliminati nodi
+	int count = 0;		//per contare quanti nodi sono stati eliminati
+	
+	if(*ptrHead == NULL)
+		puts("Non ci sono elementi da cancellare!\n");
+	else {
+		//il primo nodo è da cancellare ripetutamente
+		while(*ptrHead != NULL && (*ptrHead)->p.y == 0) {
+			ris = 1;
+			++count;
+			node = *ptrHead;
+			*ptrHead = (*ptrHead)->next;
+			free(node);
+		}
+		//se esci dal while con la seconda condizione falsa...
+		if(*ptrHead != NULL) {
+			node = *ptrHead;
+			while(node->next != NULL) {
+				if(node->next->p.y == 0) {
+					ris = 1;
+					++count;
+					Nodo *temp = node->next;
+					node->next = node->next->next;
+					free(temp);
+				}
+				else
+					node = node->next;
+			}
+		}
+		
+	}
+	if(ris)
+		printf("Sono stati eliminati: %d punti!\n\n", count);
+	else
+		puts("Non esiste un punto con coordinata y pari a 0\n");
+			
+}
+
+float distanza(Punto *x0, Punto *x1) {
+	return sqrt(pow((x1->x - x0->x), 2) + pow((x1->y - x0->y), 2));
+}
+
+void distMin(Nodo *head) {
+	float dist, minDist;		//per le distanze
+	
+	//controllo se ci sono almeno due nodi
+	if(head == NULL || head->next == NULL)
+		puts("Non ci sono abbastanza punti!\n");
+	else {
+		Nodo *node = head;		//per scorrere la lista
+		
+		Punto p1 = node->p;
+		Punto p2 = node->next->p;
+		minDist = distanza(&p1, &p2);
+		
+		while(node->next != NULL) {
+			dist = distanza(&p1, &p2);
+			if(dist < minDist) {
+				p1 = node->p;
+				p2 = node->next->p;
+				minDist = dist;
+			}
+			node = node->next;
+		}
+		puts("I punti la cui distanza è minima sono:");
+		puts("*************************");
+		printf("-");visualizzaPunto(&p1);
+		printf("-");visualizzaPunto(&p2);
+		printf("Distanza: %.2f\n", minDist);
+		puts("*************************");
+	}
+}
+
+
+void listaColore(Nodo *head) {
+	char colore[20];
+	printf("Inserisci il colore dei punti da visualizzare: ");
+	fgets(colore, 20, stdin);
+	colore[strlen(colore)-1] = '\0';
+	
+	if(head == NULL)
+		puts("Non ci sono elementi da visualizzare!\n");
+	else {
+		printf("Ecco la lista di punti di colore %s:\n", colore);
+		puts("*************************");
+		while(head != NULL) {
+			if(strcmp(head->p.colore, colore) == 0)
+				visualizzaPunto(&head->p);
+			head = head->next;
+		}
+		puts("*************************");
+		puts("Fine della lista");
+	}
+	
+	
+}
