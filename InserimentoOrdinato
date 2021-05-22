@@ -1,0 +1,17 @@
+void inserimentoOrd(Nodo **ptrHead) {
+	Nodo *nuovo = malloc(sizeof(Nodo));
+	leggiTri(&nuovo->t);
+	//è un inserimento in testa?
+	if(*ptrHead == NULL || (*ptrHead)->t.lato > nuovo->t.lato) {
+		nuovo->next = *ptrHead;
+		*ptrHead = nuovo;
+	}
+	//non è un inserimento in testa
+	else {
+		Nodo *node = *ptrHead;
+		while(node->next != NULL && nuovo->t.lato > node->t.lato)
+			node = node->next;
+		nuovo->next = node->next;
+		node->next = nuovo;
+	}
+}
