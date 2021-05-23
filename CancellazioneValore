@@ -1,0 +1,38 @@
+void cancellazioneVal(Nodo **ptrHead) {
+	float per;
+	printf("Inserisci il perimetro di un triangolo da cancellare: ");
+	scanf("%f", &per);
+	
+	Nodo *node = NULL;
+	//lista vuota
+	if(*ptrHead == NULL)
+		puts("Non ci sono elementi!\n");
+	else {
+		//cancellazione in testa?
+		if(perimetro(&(*ptrHead)->t) == per) {
+			node = *ptrHead;
+			*ptrHead = (*ptrHead)->next;
+			free(node);
+			puts("Cancellazione(in testa) effettuta!\n");
+		}
+		//cancellazione non in testa
+		else {
+			int trovato = 0;
+			node = *ptrHead;
+			while(node->next != NULL && !trovato)
+				if(perimetro(&node->next->t) == per)
+					trovato = 1;
+				else
+					node = node->next;
+			//come si esce dal while?
+			if(trovato == 0)
+				puts("Non ci sono triangoli con il perimetro da te richiesto!\n");
+			else {
+				Nodo *temp = node->next;
+				node->next = node->next->next;
+				free(temp);
+				puts("Cancellazione effettuata!\n");
+			}
+		}
+	}
+}
