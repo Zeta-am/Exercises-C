@@ -1,0 +1,218 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+
+//DEFINIZIONE DI STRUTTURE
+typedef struct {
+	float x;
+	float y;
+}Vert;
+
+typedef struct {
+	Vert bs;
+	Vert ad;
+}Rett;
+
+typedef struct nodo {
+	Rett r;
+	struct nodo *next;
+}Nodo;
+
+
+//PROTOTIPI DI FUNZIONE
+void istruzioni();
+void visualizza(Nodo *);
+void visRett(Rett *);
+float area(Rett *);
+float perimetro(Rett *);
+void inserimento(Nodo **);
+void leggiRett(Rett *);
+void cancMult(Nodo **);
+void salva(Nodo *);
+Nodo *acquisisci();
+
+//FUNZIONE PRINCIPALE
+int main() {
+	Nodo *head = acquisisci();
+	int scelta = -1;
+	while(scelta != 0) {
+		istruzioni();
+		scanf("%d", &scelta);
+		switch(scelta) {
+			case 1:
+			visualizza(head);
+			break;
+			
+			case 2:
+			inserimento(&head);
+			puts("Inserimento effettuato!\n");
+			break;
+			
+			case 3:
+			cancMult(&head);
+			break;
+			
+			case 0:
+			break;
+			
+			default:
+			puts("Opzione non presente!\n");
+		}
+	}
+	puts("Alla prossima!");
+	salva(head);
+}
+
+void istruzioni(){
+	puts("Scegli un opzione:\n"
+	     "  [1]-Visualizzazione\n"
+	     "  [2]-Inserimento in testa\n"
+	     "  [3]-Cancellazione multipla\n"
+	     "  [0]-Esci");
+	printf("-->");
+}
+
+void visualizza(Nodo *head) {
+	if(head == NULL)
+		puts("Non ci sono nodi da visualizzare!\n");
+	else {
+		puts("Ecco la lista di rettangoli:");
+		puts("*************************");
+		int i = 1;
+		while(head != NULL) {
+			printf("Rettangolo %d:\n", i);
+			visRett(&head->r);
+			puts("");
+			head = head->next;
+			++i;
+		}
+		puts("*************************");
+		puts("Fine della lista!\n");
+	}
+}
+
+void visRett(Rett *r) {
+	printf("Vertice in basso a sx: (%.2f, %.2f)\n", r->bs.x, r->bs.y);
+	printf("Vertice in basso a dx: (%.2f, %.2f)\n", r->ad.x, r->bs.y);
+	printf("Vertice in alto a sx: (%.2f, %.2f)\n", r->bs.x, r->ad.y);
+	printf("Vertice in alto a dx: (%.2f, %.2f)\n", r->ad.x, r->ad.y);
+	printf("Area: %.2f\n", area(r));
+	printf("Perimetro: %.2f\n", perimetro(r));
+	if(r->ad.x - r->bs.x == r->ad.y - r->bs.y)
+		puts("Il rettangolo è un quadrato");
+}
+
+float area(Rett *r) {
+	return ((r->ad.x - r->bs.x) * (r->ad.y - r->bs.y));
+}
+
+float perimetro(Rett *r) {
+	return 2 * ((r->ad.x - r->bs.x) + (r->ad.y - r->bs.y));
+}
+
+void inserimento(Nodo **ptrHead) {
+	Nodo *nuovo = malloc(sizeof(Nodo));
+	leggiRett(&nuovo->r);
+	nuovo->next = *ptrHead;
+	*ptrHead = nuovo;
+}
+
+void leggiRett(Rett *r) {
+	float l;
+	puts("Inserisci le coordinate del vertice in basso a sx:");
+	printf("Ascissa(x): ");
+	scanf("%f", &r->bs.x);
+	printf("Ordinata(y): ");
+	scanf("%f", &r->bs.y);
+	do {
+		printf("Inserisci la lunghezza del lato orizzontale: ");
+		scanf("%f", &l);
+		if(l <= 0)
+			puts("Inserisci un valore positivo!");
+	}while(l <= 0);
+	r->ad.x = r->bs.x + l;
+	
+	do {
+		printf("Inserisci la lunghezza del lato verticale: ");
+		scanf("%f", &l);
+		if(l <= 0)
+			puts("Inserisci un valore positivo!");
+	}while(l <= 0);
+	r->ad.y = r->bs.y + l;
+}
+
+void cancMult(Nodo **ptrHead) {
+	Nodo *node = NULL;		//appoggio per la cancellazione
+	int count = 0;		//per contare i nodi cancellati
+	int ris = 0;			//per controllare se almeno un nodo è stato cancellato
+	
+	if(*ptrHead == NULL)
+		puts("Non ci sono nodi da cancellare!\n");
+	else {
+		while(*ptrHead != NULL && area(&(*ptrHead)->r) > 10) {
+			node = *ptrHead;
+			*ptrHead = (*ptrHead)->next;
+			free(node);
+			++count;
+			ris = 1;
+		}
+		if(*ptrHead != NULL) {
+			node = *ptrHead;
+			while(node->next != NULL) {
+				if(area(&node->next->r) > 10) {
+					Nodo *temp = node->next;
+					node->next = node->next->next;
+					free(temp);
+					ris = 1;
+					++count;
+				}
+				else 
+					node = node->next;
+			}
+		}
+	}
+	if(ris)
+		printf("Sono stati cancellati %d rettangoli!\n\n", count);
+	else
+		puts("Non sono stati cancellati rettangoli!\n");
+}
+
+void salva(Nodo *head) {
+	FILE *fp = fopen("Rettangoli.dat", "wb");
+	if(fp == NULL)
+		puts("Salvataggio fallito!");
+	else {
+		while(head != NULL) {
+			fwrite(&head->r, sizeof(Rett), 1, fp);
+			head = head->next;
+		}
+		fclose(fp);
+		puts("Salvataggio riuscito!");
+	}
+}
+
+Nodo *acquisisci() {
+	Nodo *head = NULL;
+	FILE *fp = fopen("Rettangoli.dat", "rb");
+	if(fp == NULL)
+		puts("Acquisizione fallita!");
+	else {
+		Rett re;
+		if(fread(&re, sizeof(Rett), 1, fp) == 0)
+			puts("Non sono presenti rettangoli nel file!");
+		else {
+			head = malloc(sizeof(Nodo));
+			head->r = re;
+			Nodo *node = head;
+			while(fread(&re, sizeof(Rett), 1, fp) > 0) {
+				node->next = malloc(sizeof(Nodo));
+				node = node->next;
+				node->r = re;
+			}
+			node->next = NULL;
+			puts("Rettangoli recuperati!");
+		}
+		fclose(fp);
+	}
+	return head;
+}
