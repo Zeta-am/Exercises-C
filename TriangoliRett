@@ -1,0 +1,169 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+//DEFINIZIONE DI STRUTTURE
+typedef struct {
+	float x;
+	float y;
+}Vert;
+
+typedef struct {
+	Vert as;
+	Vert bd;
+}Triangle;
+
+typedef struct nodo {
+	Triangle t;
+	struct nodo *next;
+}Nodo;
+
+
+//PROTOTIPI DI FUNIZONE
+void istruzioni();
+void visualizza(Nodo *);
+void visTri(Triangle *);
+float area(Triangle *);
+void inserimento(Nodo **);
+void leggiT(Triangle *);
+void ordinamento(Nodo *);
+void inserimentoOrd(Nodo **);
+
+//FUNZIONE PRINCIPALE
+int main() {
+	Nodo *head = NULL;
+	int scelta = -1;
+	
+	while(scelta != 0) {
+		istruzioni();
+		scanf("%d", &scelta);
+		switch(scelta) {
+			case 1:
+			visualizza(head);
+			break;
+			
+			case 2:
+			inserimento(&head);
+			puts("Inserimento effettuato!\n");
+			break;
+			
+			case 3:
+			ordinamento(head);
+			puts("Ordinamento effettuato!\n");
+			break;
+			
+			case 4:
+			inserimentoOrd(&head);
+			puts("Inserimento effettuato!\n");
+			break;
+			
+			case 0:
+			break;
+			
+			default:
+			puts("Opzione non presente!\n");
+		}
+	}
+	puts("Alla prossima!");
+}
+
+void istruzioni(){
+	puts("Scegli un opzione:\n"
+	     "  [1]-Visualizzazione\n"
+	     "  [2]-Inserimento in testa\n"
+	     "  [3]-Ordinamento\n"
+	     "  [4]-Inserimento ordinato(solo se la lista è già ordinata)\n"
+	     "  [0]-Esci");
+	printf("-->");
+}
+
+
+void visualizza(Nodo *head) {
+	if(head == NULL)
+		puts("Non ci sono elementi da visualizzare!\n");
+	else {
+		puts("Ecco la lista di triangoli:");
+		puts("*************************");
+		int i = 1;
+		while(head != NULL) {
+			printf("Triangolo %d:\n", i);
+			visTri(&head->t);
+			puts("");
+			head = head->next;
+			
+			++i;
+		}
+		puts("*************************");
+		puts("Fine della lista!\n");
+	}
+}
+
+void visTri(Triangle *t) {
+	printf("Vertice in alto a sx:(%.2f, %.2f)\n", t->as.x, t->as.y);
+	printf("Vertice in basso a dx:(%.2f, %.2f)\n", t->bd.x, t->bd.y);
+	printf("Area: %.2f\n", area(t));
+}
+
+float area(Triangle *t) {
+	return ((t->bd.x - t->as.x) * (t->as.y - t->bd.y)) / 2;
+}
+
+void inserimento(Nodo **ptrHead) {
+	Nodo *nuovo = malloc(sizeof(Nodo));
+	leggiT(&nuovo->t);
+	nuovo->next = *ptrHead;
+	*ptrHead = nuovo;
+}
+
+void leggiT(Triangle *t) {
+	printf("Inserisci la coordinata x del vertice in alto a sx: ");		//x(as)
+	scanf("%f", &t->as.x);
+	printf("Inserisci la coordinata y del vertice in alto a sx: ");		//y(as)
+	scanf("%f", &t->as.y);
+	
+	do {
+		printf("Inserisci la coordinata x del vertice in basso a dx: ");		//x(bd)
+		scanf("%f", &t->bd.x);
+		if(t->bd.x <= t->as.x)
+			printf("Questo valore deve essere maggiore di %.2f!\n", t->as.x);
+	}while(t->bd.x <= t->as.x);
+	
+	do {
+		printf("Inserisci la coordinata y del vertice in basso a dx: ");		//y(bd)
+		scanf("%f", &t->bd.y);
+		if(t->bd.y >= t->as.y)
+			printf("Questo valore deve essere minore di %.2f!\n", t->as.y);
+	}while(t->bd.y >= t->as.y);
+}
+
+void ordinamento(Nodo *head) {
+	Nodo *i = NULL;
+	Nodo *j = NULL; 
+	
+	for(i = head; i->next != NULL; i = i->next) {
+		for(j = i; j != NULL; j = j->next) {
+			if(area(&j->t) < area(&i->t)) {
+				Triangle temp = j->t;
+				j->t = i->t;
+				i->t = temp;
+			}
+		}
+	}
+}
+
+void inserimentoOrd(Nodo **ptrHead) {
+	Nodo *nuovo = malloc(sizeof(Nodo));
+	leggiT(&nuovo->t);
+	//inserimento in testa?
+	if(*ptrHead == NULL || area(&nuovo->t) <= area(&(*ptrHead)->t)) {
+		nuovo->next = *ptrHead;
+		*ptrHead = nuovo;
+	}
+	//inserimento non in testa
+	else {
+		Nodo *node = *ptrHead;
+		while(node->next != NULL && area(&nuovo->t) > area(&node->next->t))
+			node = node->next;
+		nuovo->next = node->next;
+		node->next = nuovo;	
+	}	
+}
